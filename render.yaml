@@ -1,14 +1,8 @@
-services:
-  # PostgreSQL Database
-  - type: pserv
-    name: ns-nano-db
-    env: docker
-    plan: free
-    region: oregon
-    databaseName: neurosynth_db
-    databaseUser: neurosynth_user
-    ipAllowList: []
+# Render Blueprint Configuration
+# This is a simplified version - only Web Service (Database created manually)
+# For full auto-deployment including database, see render.full.yaml
 
+services:
   # Flask Web Service
   - type: web
     name: ns-nano
@@ -20,9 +14,9 @@ services:
     startCommand: gunicorn src.app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0
+        value: "3.10.0"
       - key: DB_URL
-        fromDatabase:
-          name: ns-nano-db
-          property: connectionString
+        sync: false
+        # You need to manually set this in Render Dashboard
+        # Format: postgresql://USER:PASSWORD@HOST:PORT/DATABASE
 
