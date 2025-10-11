@@ -43,13 +43,26 @@ def create_app():
         """
         Return studies that mention term_a but NOT term_b.
         
+        Automatically adds 'terms_abstract_tfidf__' prefix if not present.
+        
         Args:
-            term_a: First term (included)
-            term_b: Second term (excluded)
+            term_a: First term (included), e.g., "fear" or "terms_abstract_tfidf__fear"
+            term_b: Second term (excluded), e.g., "pain" or "terms_abstract_tfidf__pain"
             
         Returns:
             JSON response with studies list
         """
+        # Store original terms for response
+        original_term_a = term_a
+        original_term_b = term_b
+        
+        # Auto-add prefix if not present
+        prefix = "terms_abstract_tfidf__"
+        if not term_a.startswith(prefix):
+            term_a = f"{prefix}{term_a}"
+        if not term_b.startswith(prefix):
+            term_b = f"{prefix}{term_b}"
+        
         eng = get_engine()
         try:
             with eng.begin() as conn:
@@ -71,18 +84,20 @@ def create_app():
                 studies = [row[0] for row in result]
                 
                 return jsonify({
-                    "term_a": term_a,
-                    "term_b": term_b,
-                    "dissociation": f"{term_a} \\ {term_b}",
+                    "term_a": original_term_a,
+                    "term_b": original_term_b,
+                    "dissociation": f"{original_term_a} \\ {original_term_b}",
                     "count": len(studies),
-                    "studies": studies
+                    "studies": studies,
+                    "database_term_a": term_a,
+                    "database_term_b": term_b
                 }), 200
                 
         except Exception as e:
             return jsonify({
                 "error": str(e),
-                "term_a": term_a,
-                "term_b": term_b
+                "term_a": original_term_a,
+                "term_b": original_term_b
             }), 500
 
     @app.get("/dissociate/locations/<coords_a>/<coords_b>", endpoint="dissociate_locations")
