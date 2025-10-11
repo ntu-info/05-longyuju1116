@@ -132,20 +132,26 @@ def create_app():
         """
         return _dissociate_by_locations_with_radius(coords_a, coords_b, 6.0)
 
-    @app.get("/dissociate/locations/<coords_a>/<coords_b>/<float:radius>", endpoint="dissociate_locations_custom_radius")
-    def dissociate_by_locations_custom(coords_a: str, coords_b: str, radius: float):
+    @app.get("/dissociate/locations/<coords_a>/<coords_b>/<radius>", endpoint="dissociate_locations_custom_radius")
+    def dissociate_by_locations_custom(coords_a: str, coords_b: str, radius: str):
         """
         Return studies near coords_a but NOT near coords_b with custom radius.
         
         Args:
             coords_a: First coordinate as x_y_z (e.g., "0_-52_26")
             coords_b: Second coordinate as x_y_z (e.g., "-2_50_-6")
-            radius: Search radius in mm (e.g., 6.0)
+            radius: Search radius in mm (e.g., 6 or 6.0)
             
         Returns:
             JSON response with studies list
         """
-        return _dissociate_by_locations_with_radius(coords_a, coords_b, radius)
+        try:
+            radius_float = float(radius)
+        except (ValueError, TypeError):
+            return jsonify({
+                "error": f"Invalid radius format: {radius}. Must be a number."
+            }), 400
+        return _dissociate_by_locations_with_radius(coords_a, coords_b, radius_float)
     
     def _dissociate_by_locations_with_radius(coords_a: str, coords_b: str, radius: float):
         """
@@ -219,14 +225,14 @@ def create_app():
                 "location_b": coords_b
             }), 500
 
-    @app.get("/locations/<coords>/<float:radius>", endpoint="studies_by_location")
-    def studies_by_location(coords: str, radius: float):
+    @app.get("/locations/<coords>/<radius>", endpoint="studies_by_location")
+    def studies_by_location(coords: str, radius: str):
         """
         Return all studies within radius of the given coordinate.
         
         Args:
             coords: Coordinate as x_y_z (e.g., "0_-52_26")
-            radius: Search radius in mm (e.g., 6.0)
+            radius: Search radius in mm (e.g., 6 or 6.0)
             
         Returns:
             JSON response with studies list
@@ -238,7 +244,14 @@ def create_app():
                 "error": "Invalid coordinate format. Use x_y_z format (e.g., 0_-52_26)"
             }), 400
         
-        if radius <= 0:
+        try:
+            radius_float = float(radius)
+        except (ValueError, TypeError):
+            return jsonify({
+                "error": f"Invalid radius format: {radius}. Must be a number."
+            }), 400
+        
+        if radius_float <= 0:
             return jsonify({
                 "error": "Radius must be positive"
             }), 400
@@ -261,13 +274,13 @@ def create_app():
                 
                 result = conn.execute(query, {
                     "x": x, "y": y, "z": z,
-                    "radius": radius
+                    "radius": radius_float
                 })
                 studies = [row[0] for row in result]
                 
                 return jsonify({
                     "location": {"x": x, "y": y, "z": z},
-                    "radius_mm": radius,
+                    "radius_mm": radius_float,
                     "count": len(studies),
                     "studies": studies
                 }), 200
