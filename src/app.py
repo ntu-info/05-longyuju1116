@@ -29,6 +29,23 @@ def create_app():
     @app.get("/", endpoint="health")
     def health():
         return "<p>Server working!</p>"
+    
+    @app.get("/routes", endpoint="list_routes")
+    def list_routes():
+        """
+        List all registered routes (for debugging).
+        """
+        routes = []
+        for rule in app.url_map.iter_rules():
+            routes.append({
+                "endpoint": rule.endpoint,
+                "methods": list(rule.methods),
+                "path": rule.rule
+            })
+        return jsonify({
+            "count": len(routes),
+            "routes": sorted(routes, key=lambda x: x["path"])
+        })
 
     @app.get("/img", endpoint="show_img")
     def show_img():
