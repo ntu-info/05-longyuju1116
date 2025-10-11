@@ -32,11 +32,11 @@ git push origin master
 pip install -r requirements.txt
 
 # 2. 檢查資料庫連接（將 URL 替換為你的資料庫 URL）
-python src/check_db.py --url "postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+python3 src/check_db.py --url "postgresql://neurosynth_db_oche_user:TMD9aHemvX3i7k2SmheqAngKGyRlhOSk@dpg-d3kvohr3fgac73a5oed0-a.oregon-postgres.render.com/neurosynth_db_oche"
 
 # 3. 填充資料庫（這可能需要 10-30 分鐘）
-python src/create_db.py \
-  --url "postgresql://USER:PASSWORD@HOST:PORT/DATABASE" \
+python3 src/create_db.py \
+  --url "postgresql://neurosynth_db_oche_user:TMD9aHemvX3i7k2SmheqAngKGyRlhOSk@dpg-d3kvohr3fgac73a5oed0-a.oregon-postgres.render.com/neurosynth_db_oche" \
   --data-dir ./data \
   --schema ns
 ```
@@ -78,7 +78,7 @@ python src/create_db.py \
 
 ```bash
 # 使用測試腳本（推薦）
-python test_endpoints.py https://ns-nano.onrender.com
+python3 test_endpoints.py https://ns-nano.onrender.com
 
 # 或手動測試
 curl https://ns-nano.onrender.com/
