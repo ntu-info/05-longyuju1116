@@ -77,20 +77,36 @@ def main():
         ("/img", "Static image file"),
         ("/test_db", "Database connectivity test"),
         (
-            "/dissociate/terms/posterior_cingulate/ventromedial_prefrontal",
-            "Dissociate by terms (posterior_cingulate \\ ventromedial_prefrontal)"
+            "/dissociate/terms/fear/pain",
+            "Dissociate by terms (fear \\ pain) - with auto prefix"
         ),
         (
-            "/dissociate/terms/ventromedial_prefrontal/posterior_cingulate",
-            "Dissociate by terms (ventromedial_prefrontal \\ posterior_cingulate)"
+            "/dissociate/terms/pain/fear",
+            "Dissociate by terms (pain \\ fear) - with auto prefix"
         ),
         (
             "/dissociate/locations/0_-52_26/-2_50_-6",
-            "Dissociate by locations (PCC \\ vmPFC - Default Mode Network)"
+            "Dissociate by locations (PCC \\ vmPFC) - default radius=6mm"
         ),
         (
             "/dissociate/locations/-2_50_-6/0_-52_26",
-            "Dissociate by locations (vmPFC \\ PCC - Default Mode Network)"
+            "Dissociate by locations (vmPFC \\ PCC) - default radius=6mm"
+        ),
+        (
+            "/dissociate/locations/0_-52_26/-2_50_-6/10",
+            "Dissociate by locations (PCC \\ vmPFC) - custom radius=10mm"
+        ),
+        (
+            "/dissociate/locations/0_-52_26/-2_50_-6/8",
+            "Dissociate by locations (PCC \\ vmPFC) - custom radius=8mm"
+        ),
+        (
+            "/locations/0_-52_26/6",
+            "Studies near coordinate [0, -52, 26] with radius=6mm"
+        ),
+        (
+            "/locations/-2_50_-6/10",
+            "Studies near coordinate [-2, 50, -6] with radius=10mm"
         ),
     ]
     
