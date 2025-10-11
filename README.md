@@ -15,12 +15,11 @@ The service provides powerful APIs to query studies mentioning one concept/coord
 
 ## ✨ Features
 
-- 🔬 **Term Dissociation**: Query studies by cognitive terms with automatic prefix handling
+- 🔬 **Term Dissociation**: Query studies by cognitive terms
 - 📍 **Spatial Dissociation**: PostGIS-powered 3D coordinate queries with configurable search radius
 - 🎯 **Single Location Query**: Find all studies within a specified radius of any MNI coordinate
 - 🚀 **Production Ready**: Deployed with Gunicorn, optimized SQL queries with proper indexing
 - 📊 **Large Dataset**: 1M+ annotations, 100K+ coordinates from Neurosynth meta-analysis database
-- 🧪 **Comprehensive Testing**: Automated test suite covering all endpoints
 
 ---
 
@@ -214,10 +213,10 @@ pip install -r requirements.txt
 
 ```bash
 # Check database connection and extensions
-python src/check_db.py --url "postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+python3 src/check_db.py --url "postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 
 # Populate database (takes 10-30 minutes)
-python src/create_db.py \
+python3 src/create_db.py \
   --url "postgresql://USER:PASSWORD@HOST:PORT/DATABASE" \
   --data-dir ./data \
   --schema ns
@@ -237,7 +236,7 @@ gunicorn src.app:app --bind 0.0.0.0:5000
 ### 5. Run Tests
 
 ```bash
-python test_endpoints.py http://localhost:5000
+python3 test_endpoints.py http://localhost:5000
 ```
 
 ---
@@ -283,7 +282,7 @@ pyarrow>=14.0.0       # Parquet file support
 
 2. **Populate Database** (local)
    ```bash
-   python src/create_db.py --url "YOUR_DATABASE_URL" --data-dir ./data --schema ns
+   python3 src/create_db.py --url "YOUR_DATABASE_URL" --data-dir ./data --schema ns
    ```
 
 3. **Create Web Service**
@@ -294,7 +293,7 @@ pyarrow>=14.0.0       # Parquet file support
 
 4. **Deploy & Test**
    ```bash
-   python test_endpoints.py https://YOUR-APP.onrender.com
+   python3 test_endpoints.py https://YOUR-APP.onrender.com
    ```
 
 **📖 Detailed guides**: See [guide/DEPLOYMENT_QUICKSTART.md](guide/DEPLOYMENT_QUICKSTART.md)
@@ -397,7 +396,7 @@ The application uses the `ns` schema in PostgreSQL with three main tables:
 ### Run All Tests
 
 ```bash
-python test_endpoints.py https://ns-nano-bzsi.onrender.com
+python3 test_endpoints.py https://ns-nano-bzsi.onrender.com
 ```
 
 ### Test Coverage
