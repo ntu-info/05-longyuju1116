@@ -104,7 +104,7 @@ def create_app():
     def dissociate_by_locations(coords_a: str, coords_b: str):
         """
         Return studies near coords_a but NOT near coords_b.
-        Uses 10mm radius for spatial proximity search.
+        Uses default 6mm radius for spatial proximity search.
         
         Args:
             coords_a: First coordinate as x_y_z (e.g., "0_-52_26")
@@ -112,6 +112,27 @@ def create_app():
             
         Returns:
             JSON response with studies list
+        """
+        return _dissociate_by_locations_with_radius(coords_a, coords_b, 6.0)
+
+    @app.get("/dissociate/locations/<coords_a>/<coords_b>/<float:radius>", endpoint="dissociate_locations_custom_radius")
+    def dissociate_by_locations_custom(coords_a: str, coords_b: str, radius: float):
+        """
+        Return studies near coords_a but NOT near coords_b with custom radius.
+        
+        Args:
+            coords_a: First coordinate as x_y_z (e.g., "0_-52_26")
+            coords_b: Second coordinate as x_y_z (e.g., "-2_50_-6")
+            radius: Search radius in mm (e.g., 6.0)
+            
+        Returns:
+            JSON response with studies list
+        """
+        return _dissociate_by_locations_with_radius(coords_a, coords_b, radius)
+    
+    def _dissociate_by_locations_with_radius(coords_a: str, coords_b: str, radius: float):
+        """
+        Helper function for location dissociation with configurable radius.
         """
         try:
             x1, y1, z1 = map(float, coords_a.split("_"))
@@ -121,13 +142,15 @@ def create_app():
                 "error": "Invalid coordinate format. Use x_y_z format (e.g., 0_-52_26)"
             }), 400
         
+        if radius <= 0:
+            return jsonify({
+                "error": "Radius must be positive"
+            }), 400
+        
         eng = get_engine()
         try:
             with eng.begin() as conn:
                 conn.execute(text("SET search_path TO ns, public;"))
-                
-                # Define search radius (in mm)
-                radius = 10.0
                 
                 # Query: studies near coords_a but not near coords_b
                 # Using Euclidean distance in 3D space
@@ -177,6 +200,65 @@ def create_app():
                 "error": str(e),
                 "location_a": coords_a,
                 "location_b": coords_b
+            }), 500
+
+    @app.get("/locations/<coords>/<float:radius>", endpoint="studies_by_location")
+    def studies_by_location(coords: str, radius: float):
+        """
+        Return all studies within radius of the given coordinate.
+        
+        Args:
+            coords: Coordinate as x_y_z (e.g., "0_-52_26")
+            radius: Search radius in mm (e.g., 6.0)
+            
+        Returns:
+            JSON response with studies list
+        """
+        try:
+            x, y, z = map(float, coords.split("_"))
+        except (ValueError, AttributeError):
+            return jsonify({
+                "error": "Invalid coordinate format. Use x_y_z format (e.g., 0_-52_26)"
+            }), 400
+        
+        if radius <= 0:
+            return jsonify({
+                "error": "Radius must be positive"
+            }), 400
+        
+        eng = get_engine()
+        try:
+            with eng.begin() as conn:
+                conn.execute(text("SET search_path TO ns, public;"))
+                
+                # Query: all studies within radius of the coordinate
+                query = text("""
+                    SELECT DISTINCT study_id
+                    FROM ns.coordinates
+                    WHERE ST_3DDistance(
+                        geom,
+                        ST_SetSRID(ST_MakePoint(:x, :y, :z), 4326)
+                    ) <= :radius
+                    ORDER BY study_id
+                """)
+                
+                result = conn.execute(query, {
+                    "x": x, "y": y, "z": z,
+                    "radius": radius
+                })
+                studies = [row[0] for row in result]
+                
+                return jsonify({
+                    "location": {"x": x, "y": y, "z": z},
+                    "radius_mm": radius,
+                    "count": len(studies),
+                    "studies": studies
+                }), 200
+                
+        except Exception as e:
+            return jsonify({
+                "error": str(e),
+                "location": coords
             }), 500
 
     @app.get("/test_db", endpoint="test_db")
